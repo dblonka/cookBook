@@ -11,159 +11,59 @@ using System.Xml.Linq;
 
 namespace cookBook
 {
-    internal class RecipeManager
+    class RecipeManager
     {
-        private List<Recipe> recipes = new List<Recipe>();
+        private Dictionary<string, Recipe> recipes;
 
-        public int CountEntries(string name)
+        public RecipeManager()
         {
-            return recipes.GroupBy(recipe => recipe.Name).Where(group => group.Count() > 1).Sum(group => group.Count());
+            recipes = new Dictionary<string, Recipe>();
         }
-
-        public Recipe FindSingle(string name)
-        {
-            if (recipes.Any())
-            {
-                var matches = recipes.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase)).ToList();
-
-                if (matches.Count() == 0)
-                {
-                    return null;
-                }
-                else if (matches.Count() == 1)
-                {
-                    return recipes.Find(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-                }
-                else
-                {
-                    int i = 1;
-                    int selection = 0;
-                    Console.WriteLine("Multiple recipes found - select one\n");
-                    foreach (var element in matches)
-                    {
-                        Console.WriteLine(i + ".\t" + element.Name + " " + element.Descritpion);
-                        i++;
-                    }
-                    while(true)
-                    {
-                        if (int.TryParse(Console.ReadLine(), out selection) && selection > 0 && selection <= matches.Count())
-                        {
-                            return matches[selection - 1];
-                        } 
-                        else
-                        {
-                            Console.WriteLine("Incorrect input");
-                        }
-                    }
-                }
-            }
-            else
-            {
-                return null;
-            }
-        }
-
 
         public bool AddRecipe(Recipe recipe)
         {
-            recipes.Add(recipe);
-            return true;
+            if (recipes.ContainsKey(recipe.Name))
+                return false; 
+            recipes.Add(recipe.Name, recipe);
+            return recipes.ContainsKey(recipe.Name);
         }
 
-        public bool Confirm(string query)
-        {
-            bool result = false;
-            bool loop = true;
-            Console.WriteLine(query);
-            while(loop)
-            {
-                switch (Console.ReadKey(true).Key)
-                {
-                    case ConsoleKey.Y:
-                        result = true;
-                        loop = false;
-                        break;
-                    case ConsoleKey.N:
-                        result = false;
-                        loop = false;
-                        break;
-                }
-            }
-            return result;
-        }
-
-        /*
-         * Refactor - more than one recipe can have same name
-         * allow to select single recipe from ones with same name
-         */
         public bool DeleteRecipe(string name)
         {
-            bool remove = false;
-            if (recipes.Any())
-            {
-                Recipe recipeToRemove = FindSingle(name);
-                if (recipeToRemove != null)
-                {
-                    remove = Confirm("Are you sure you want to delete " + name + "? [Y/N]");
-                    if (remove)
-                    {
-                        recipes.Remove(recipeToRemove);
-                    }
-                }
-            }
-            return remove;
+            return recipes.Remove(name);
         }
-        public void EditRecipe(string name)
+ 
+        public void EditRecipe(Recipe recipe, string name)
         {
-            if (recipes.Any())
-            {
-                Recipe recipeToEdit = FindSingle(name);
-                if (recipeToEdit != null)
-                {
-                    Console.WriteLine("New name for recipe: ");
-                    string newName = ""; 
-                    newName = Console.ReadLine();
-                    recipeToEdit.Name = newName;
-                }
-            }
-        }
-        public void ShowRecipe(string name)
-        {
-            if (recipes.Any())
-            {
-                
-            }
-        }
-        public void RateRecipe(Recipe recipe, int rating)
-        {
-            (int, int) oldRating = recipe.Rating;
-            recipe.Rating = (oldRating.Item1 + rating, oldRating.Item2 + 1);
-        }
-        public void ListRecipes()
-        {
-            if (recipes.Any())
-            {
-                int counter = 1;
-                foreach(Recipe recipe in recipes)
-                {
-                    Console.Write(counter + ":\t" + recipe.Name + "\n");
-                    counter++;
-                }
-            }
+            Recipe modifiedRecipe = new Recipe(recipe);
+            modifiedRecipe.Name = name;
+            AddRecipe(modifiedRecipe);
+            DeleteRecipe(recipe.Name);
         }
 
-        public void ListRecipes(string name)
+        public bool RecipeExists(string name)
         {
-            if (recipes.Any())
-            {
-                int counter = 1;
-                List<Recipe> foundRecipes = recipes.FindAll(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-                foreach (Recipe recipe in foundRecipes)
-                {
-                    Console.Write(counter + ":\t" + recipe.Name + "\n");
-                    counter++;
-                }
-            }
+            return recipes.ContainsKey(name);
+        }
+
+        public Recipe SelectRecipe(string name)
+        {
+            Recipe recipe;
+            recipes.TryGetValue(name, out recipe);
+            return recipe;
+        }
+
+        public Recipe SelectRecipe(int index)
+        {
+            if(recipes.Any() && index < recipes.Count)
+                return recipes.ElementAt(index).Value;
+            return null;
+        }
+
+        public string ShowRecipe(string name)
+        {
+            Recipe recipe = SelectRecipe(name);
+            return recipe.ToString();
         }
 
         public int AmountOfRecipes() {
@@ -172,6 +72,16 @@ namespace cookBook
                 return recipes.Count;
             }
             return 0;
+        }
+
+        public List<string> TableOfContents()
+        {
+            List<string> names = new List<string>();
+            foreach (KeyValuePair<string,Recipe> element in recipes)
+            {
+                names.Add(element.Key);
+            }
+            return names;
         }
     }
 }

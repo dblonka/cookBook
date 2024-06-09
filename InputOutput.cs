@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace cookBook
 { 
-    internal class InputOutput
+    class InputOutput
     {
         static RecipeManager recipeBook = new RecipeManager();
 
@@ -59,20 +60,33 @@ namespace cookBook
         {
             FreshConsole("cookBook - Edit recipe", "Provide name of recipe to edit");
             string name = Console.ReadLine();
-            recipeBook.EditRecipe(name);
+            if (recipeBook.RecipeExists(name))
+            {
+                Console.WriteLine("Provide new name for a recipe");
+                string newName = Console.ReadLine();
+                recipeBook.EditRecipe(recipeBook.SelectRecipe(name), newName);
+            }
         }
 
         static void DeleteRecipe()
         {
             FreshConsole("cookBook - Delete recipe", "Provide name of recipe to delete");
             string name = Console.ReadLine();
-            recipeBook.DeleteRecipe(name);
+            Console.WriteLine(recipeBook.ShowRecipe(name));
+            if (Confirmation("Are you sure you want to delete this recipe? [Y/N]"))
+            {
+                recipeBook.DeleteRecipe(name);
+            }
         }
 
         static void ListAllRecipes()
         {
             FreshConsole("cookBook - List all recipes", "");
-            recipeBook.ListRecipes();
+            List<string> tableOfContents = recipeBook.TableOfContents();
+            foreach (string item in tableOfContents)
+            {
+                Console.WriteLine(item);
+            }
             Console.WriteLine("Press any key to return to Menu");
             Console.ReadKey(true);
         }
@@ -82,6 +96,28 @@ namespace cookBook
             Console.BackgroundColor = ConsoleColor.Yellow;
             Console.ForegroundColor = ConsoleColor.Black;
             Console.ReadKey(true);
+        }
+
+        static bool Confirmation(string message)
+        {
+            bool result = false;
+            bool loop = true;
+            Console.WriteLine(message);
+            while (loop)
+            {
+                switch (Console.ReadKey(true).Key)
+                {
+                    case ConsoleKey.Y:
+                        result = true;
+                        loop = false;
+                        break;
+                    case ConsoleKey.N:
+                        result = false;
+                        loop = false;
+                        break;
+                }
+            }
+            return result;
         }
 
         static void FreshConsole(string title, string line)

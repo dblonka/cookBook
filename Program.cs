@@ -9,10 +9,8 @@ using System.Web;
 
 namespace cookBook
 {
-    internal class Program
+    class Program
     {
-
-        //static List <Recipe> recipes = new List<Recipe>();
         static InputOutput control = new InputOutput();
         static void Main(string[] args)
         {

@@ -8,7 +8,7 @@ using System.Xml.Schema;
 
 namespace cookBook
 {
-    internal class Recipe
+    class Recipe
     {
         private string _name = "";
         private int _servings = 0;
@@ -25,6 +25,19 @@ namespace cookBook
         public (int,int) Rating { get { return _rating; } set { _rating = value; } }
         public Dictionary<string, int> Ingredients { get { return _ingredients; } set { _ingredients = value; } }
         public string Descritpion { get { return _descritpion; } set { _descritpion = value; } }
+        public Recipe getRecipe()
+        {
+            return this;
+        }
+        public void setRecipe(string name, string descritpion)
+        {
+            this.Name = name;
+            this.Descritpion = descritpion;
+        }
+        public string toString()
+        {
+            return "Name: " + this._name + " Description: " + this._descritpion;
+        }
         
         public Recipe() { }
         public Recipe(string name, int servings, int difficulty, int prepTime, Dictionary<string, int> ingredients, string descritpion)
@@ -35,6 +48,15 @@ namespace cookBook
             PrepTime = prepTime;
             Descritpion = descritpion;
             Ingredients = ingredients;
+        }
+        public Recipe(Recipe recipe)
+        {
+            Name = recipe.Name;
+            Servings = recipe.Servings;
+            Difficulty = recipe.Difficulty;
+            PrepTime = recipe.PrepTime;
+            Descritpion = recipe.Descritpion;
+            Ingredients = recipe.Ingredients;
         }
 
         public Recipe(string name, string descritpion)
